@@ -267,11 +267,16 @@
       border-radius: 6px;
       border: 1px solid var(--border);
       cursor: pointer;
-      user-select: text;
+      user-select: none; /* 防止連點反白 */
       background: #fafafa;
       transition: background 0.15s, border-color 0.15s;
     }
     .option-label:hover {
+      background-color: var(--gov-blue-light);
+      border-color: #93c5fd;
+    }
+    /* 被選中時的高亮樣式 */
+    .option-label.selected-opt {
       background-color: var(--gov-blue-light);
       border-color: #93c5fd;
     }
@@ -381,6 +386,68 @@
     .btn-submit:active {
       transform: scale(0.98);
     }
+    
+    /* 意見反映懸浮按鈕與視窗 */
+    .fab-feedback {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #ffffff;
+      color: var(--gov-navy);
+      border: 2px solid var(--gov-navy);
+      padding: 12px 20px;
+      border-radius: 50px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
+      transition: all 0.2s;
+    }
+    .fab-feedback:hover {
+      background: var(--gov-navy);
+      color: #ffffff;
+      transform: translateY(-3px);
+    }
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: 1001;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .modal-content {
+      background: #fff;
+      padding: 32px;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .modal-content h3 { color: var(--gov-navy); font-size: 1.4rem; margin-bottom: 12px; }
+    .modal-content p { color: var(--text-sub); font-size: 1.05rem; margin-bottom: 24px; line-height: 1.6; }
+    .btn-modal-link {
+      display: block; text-align: center; background: var(--gov-blue); color: #fff;
+      text-decoration: none; padding: 14px; border-radius: 6px; font-weight: 700;
+      font-size: 1.1rem; margin-bottom: 12px;
+    }
+    .btn-modal-link:hover { background: #1e40af; }
+    .btn-modal-close {
+      display: block; width: 100%; text-align: center; background: #e2e8f0;
+      color: var(--text-main); border: none; padding: 12px; border-radius: 6px;
+      font-weight: 600; font-size: 1rem; cursor: pointer;
+    }
+    .btn-modal-close:hover { background: #cbd5e1; }
+    
+    /* RWD 手機版微調 */
+    @media (max-width: 600px) {
+      .q-card { padding: 20px 16px; }
+      .exam-info-card { padding: 20px 16px; }
+      textarea { font-size: 16px; } /* 防止 iOS 自動放大 */
+    }
   </style>
 </head>
 <body>
@@ -405,11 +472,11 @@
     <!-- 測驗說明卡片 -->
     <div class="exam-info-card">
       <h2>應考人測驗說明</h2>
-      <p>本測驗採開放式作答，無時間限制。請詳閱各題意後進行勾選或填答，確認全部作答完畢後再點擊最下方之「交卷」按鈕。</p>
+      <p>本測驗採開放式作答，無時間限制。系統將自題庫隨機抽取 20 題，請詳閱各題意後進行勾選或填寫答案，確認全部作答完畢後再點擊最下方之「交卷」按鈕。</p>
       <div class="exam-rules">
         <span class="rule-pill">滿分：100 分</span>
         <span class="rule-pill">及格門檻：80 分</span>
-        <span class="rule-pill">題數：共 20 題</span>
+        <span class="rule-pill">題數：共 20 題（隨機抽題）</span>
         <span class="rule-pill" style="background:#fef3c7; color:#92400e; border-color:#fde68a;">注意：交卷後即可查看分數與解析</span>
       </div>
     </div>
@@ -427,23 +494,42 @@
       <form id="quizForm" onsubmit="return false;">
         <!-- 第一部分：複選題 -->
         <div class="section-banner">
-          壹、複選題（第 1～10 題，每題 5 分）
+          壹、複選題（第 1～10 題，每題 5 分，全對給分）
         </div>
         <div id="mcqContainer"></div>
 
         <!-- 第二部分：簡答題 -->
         <div class="section-banner">
-          貳、簡答題（第 11～20 題，每題 5 分）
+          貳、簡答題（第 11～20 題，每題 5 分，依核心關鍵字自動評分）
         </div>
         <div id="saContainer"></div>
 
         <!-- 交卷區 -->
         <div id="submitZone" class="submit-zone">
           <h3 style="color: var(--gov-navy); margin-bottom: 12px; font-size: 1.4rem;">測驗作答結束</h3>
-          <p style="color: var(--text-sub); margin-bottom: 24px; font-size: 1.05rem;"></p>
+          <p style="color: var(--text-sub); margin-bottom: 24px; font-size: 1.05rem;">請確認所有題目皆已填答完畢。<br>點擊下方按鈕後，系統將結算成績並顯示標準答案解析。</p>
           <button type="button" class="btn-submit" onclick="confirmSubmit()">確認交卷</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- 意見反映懸浮按鈕 -->
+  <button class="fab-feedback" onclick="openFeedbackModal()">💡 意見反映</button>
+
+  <!-- 意見反映彈出視窗 -->
+  <div class="modal-overlay" id="feedbackModal">
+    <div class="modal-content">
+      <h3>系統意見反映與問題回報</h3>
+      <p>如果您在測驗過程中發現：<br>
+        1. 題目內容或標準答案有誤<br>
+        2. 系統操作異常、畫面跑版<br>
+        3. 簡答題有其他同義詞未被系統識別給分<br><br>
+        歡迎點擊下方按鈕前往表單回報，我們將盡速修正以提升測驗品質！
+      </p>
+      <!-- 已替換為您的專屬 Google 表單網址 -->
+      <a href="https://forms.gle/5qfGfDZUmsGo5s6H9" target="_blank" class="btn-modal-link">📝 前往填寫回報表單</a>
+      <button type="button" class="btn-modal-close" onclick="closeFeedbackModal()">關閉視窗</button>
     </div>
   </div>
 
@@ -1224,7 +1310,7 @@ const saBank = [
   }
 ];
 
-// ==================== 2. 設定抽題數量與變數 ====================
+// ==================== 2. 全域變數與系統狀態 ====================
 const MCQ_DRAW_COUNT = 10;
 const SA_DRAW_COUNT = 10;
 
@@ -1232,7 +1318,15 @@ let mcqData = [];
 let saData = [];
 let totalQuestions = 0;
 
-// ==================== 3. 隨機洗牌演算法 ====================
+// ==================== 3. 意見反映 Modal 控制 ====================
+function openFeedbackModal() {
+  document.getElementById("feedbackModal").style.display = "flex";
+}
+function closeFeedbackModal() {
+  document.getElementById("feedbackModal").style.display = "none";
+}
+
+// ==================== 4. 隨機洗牌演算法 ====================
 function shuffleArray(array) {
   let currentIndex = array.length, randomIndex;
   while (currentIndex !== 0) {
@@ -1243,15 +1337,17 @@ function shuffleArray(array) {
   return array;
 }
 
-// ==================== 4. 初始化邏輯 ====================
+// ==================== 5. 開始測驗 ====================
 function initQuiz() {
+  // 準備題庫
   mcqData = shuffleArray([...mcqBank]).slice(0, MCQ_DRAW_COUNT);
   saData = shuffleArray([...saBank]).slice(0, SA_DRAW_COUNT);
   totalQuestions = mcqData.length + saData.length;
+  
   renderQuiz();
 }
 
-// ==================== 渲染測驗題目 ====================
+// ==================== 6. 渲染測驗題目 ====================
 function renderQuiz() {
   const mcqBox = document.getElementById("mcqContainer");
   mcqBox.innerHTML = mcqData.map((item, idx) => `
@@ -1265,7 +1361,7 @@ function renderQuiz() {
           const val = ["A", "B", "C", "D", "E"][oIdx];
           return `
             <label class="option-label" id="label-${idx}-${val}">
-              <input type="checkbox" name="mcq-${idx}" value="${val}" onchange="updateDynamicProgress()">
+              <input type="checkbox" name="mcq-${idx}" value="${val}" onchange="handleOptionChange(this)">
               <span class="option-text">${opt}</span>
             </label>
           `;
@@ -1285,7 +1381,7 @@ function renderQuiz() {
           <div class="q-score-tag" id="score-tag-${globalIdx}">配分：5 分</div>
         </div>
         <textarea id="sa-input-${sIdx}" placeholder="請於此處輸入您的答案..." oninput="updateDynamicProgress()"></textarea>
-        <div class="sa-hint"></div>
+        <div class="sa-hint">提示：直接寫出重點關鍵字或數據即可，系統將自動比對專有名詞及數值。</div>
         <div class="feedback-box" id="fb-${globalIdx}"></div>
       </div>
     `;
@@ -1294,20 +1390,25 @@ function renderQuiz() {
   updateDynamicProgress();
 }
 
+// 處理複選題選項的高亮與進度更新
+function handleOptionChange(checkbox) {
+  const label = checkbox.closest('.option-label');
+  if (checkbox.checked) {
+    label.classList.add('selected-opt');
+  } else {
+    label.classList.remove('selected-opt');
+  }
+  updateDynamicProgress();
+}
+
 // ==================== 動態作答進度 ====================
 function updateDynamicProgress() {
   let answeredCount = 0;
-  
-  // 檢查複選題
   mcqData.forEach((_, idx) => {
-    const checked = document.querySelectorAll(`input[name="mcq-${idx}"]:checked`);
-    if (checked.length > 0) answeredCount++;
+    if (document.querySelectorAll(`input[name="mcq-${idx}"]:checked`).length > 0) answeredCount++;
   });
-  
-  // 檢查簡答題
   saData.forEach((_, sIdx) => {
-    const val = document.getElementById(`sa-input-${sIdx}`).value.trim();
-    if (val.length > 0) answeredCount++;
+    if (document.getElementById(`sa-input-${sIdx}`).value.trim().length > 0) answeredCount++;
   });
 
   document.getElementById("progressText").innerText = `${answeredCount} / ${totalQuestions}`;
@@ -1339,7 +1440,7 @@ function confirmSubmit() {
       return;
     }
   } else {
-    if (!confirm("確認送出試卷")) {
+    if (!confirm("確認送出試卷並進行批改嗎？")) {
       return;
     }
   }
@@ -1351,9 +1452,7 @@ function submitQuiz() {
   let saTotal = 0;
 
   // 停用所有輸入框
-  document.querySelectorAll("input[type=checkbox], textarea").forEach(el => {
-    el.disabled = true;
-  });
+  document.querySelectorAll("input[type=checkbox], textarea").forEach(el => el.disabled = true);
 
   // 1. 批改複選題
   mcqData.forEach((item, idx) => {
@@ -1440,7 +1539,7 @@ function submitQuiz() {
     }
 
     fb.innerHTML = `
-      <div><strong>：${qScore} / 5 分</strong></div>
+      <div><strong>系統關鍵字批改得分：${qScore} / 5 分</strong></div>
       <div class="keyword-list">${kwTagsHtml.join("")}</div>
       <div class="ref-box"><strong>官方標準解析：</strong><br>${item.ref}</div>
     `;
@@ -1470,6 +1569,14 @@ function submitQuiz() {
 
   // 捲動到頂部看成績
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// 點擊 Modal 背景自動關閉
+window.onclick = function(event) {
+  const modal = document.getElementById("feedbackModal");
+  if (event.target === modal) {
+    modal.style.display = "none";
+  }
 }
 
 // 啟動初始化腳本

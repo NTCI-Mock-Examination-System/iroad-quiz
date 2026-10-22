@@ -472,11 +472,11 @@
     <!-- 測驗說明卡片 -->
     <div class="exam-info-card">
       <h2>應考人測驗說明</h2>
-      <p>本測驗採開放式作答，無時間限制。系統將自題庫隨機抽取 20 題，請詳閱各題意後進行勾選或填寫答案，確認全部作答完畢後再點擊最下方之「交卷」按鈕。</p>
+      <p>本測驗採開放式作答，無時間限制。請詳閱各題意後進行勾選或填寫答案，確認全部作答完畢後再點擊最下方之「交卷」按鈕。</p>
       <div class="exam-rules">
         <span class="rule-pill">滿分：100 分</span>
         <span class="rule-pill">及格門檻：80 分</span>
-        <span class="rule-pill">題數：共 20 題（隨機抽題）</span>
+        <span class="rule-pill">題數：共 20 題</span>
         <span class="rule-pill" style="background:#fef3c7; color:#92400e; border-color:#fde68a;">注意：交卷後即可查看分數與解析</span>
       </div>
     </div>
@@ -494,13 +494,13 @@
       <form id="quizForm" onsubmit="return false;">
         <!-- 第一部分：複選題 -->
         <div class="section-banner">
-          壹、複選題（第 1～10 題，每題 5 分，全對給分）
+          壹、複選題（第 1～10 題，每題 5 分）
         </div>
         <div id="mcqContainer"></div>
 
         <!-- 第二部分：簡答題 -->
         <div class="section-banner">
-          貳、簡答題（第 11～20 題，每題 5 分，依核心關鍵字自動評分）
+          貳、簡答題（第 11～20 題，每題 5 分）
         </div>
         <div id="saContainer"></div>
 
@@ -1381,7 +1381,7 @@ function renderQuiz() {
           <div class="q-score-tag" id="score-tag-${globalIdx}">配分：5 分</div>
         </div>
         <textarea id="sa-input-${sIdx}" placeholder="請於此處輸入您的答案..." oninput="updateDynamicProgress()"></textarea>
-        <div class="sa-hint">提示：直接寫出重點關鍵字或數據即可，系統將自動比對專有名詞及數值。</div>
+        <div class="sa-hint"></div>
         <div class="feedback-box" id="fb-${globalIdx}"></div>
       </div>
     `;
@@ -1440,7 +1440,7 @@ function confirmSubmit() {
       return;
     }
   } else {
-    if (!confirm("確認送出試卷並進行批改嗎？")) {
+    if (!confirm("送出試卷")) {
       return;
     }
   }
@@ -1539,7 +1539,7 @@ function submitQuiz() {
     }
 
     fb.innerHTML = `
-      <div><strong>系統關鍵字批改得分：${qScore} / 5 分</strong></div>
+      <div><strong>得分：${qScore} / 5 分</strong></div>
       <div class="keyword-list">${kwTagsHtml.join("")}</div>
       <div class="ref-box"><strong>官方標準解析：</strong><br>${item.ref}</div>
     `;

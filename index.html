@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>新北市智慧道路管理中心｜駐點人員資格線上測驗系統</title>
+  <title>新北市智慧道路管理中心｜駐點人員模擬測驗系統</title>
   <style>
     :root {
       --gov-navy: #0c2340;
@@ -390,7 +390,7 @@
     <div class="topbar-inner">
       <div class="gov-brand">
         <span class="gov-emblem">iROAD</span>
-        <span class="gov-title">新北市智慧道路管理中心｜駐點人員測驗系統</span>
+        <span class="gov-title">新北市智慧道路管理中心｜駐點人員模擬測驗系統</span>
       </div>
       <div class="status-Widgets">
         <div class="badge-box">已作答進度：<strong id="progressText">0 / 20</strong> 題</div>
@@ -405,11 +405,11 @@
     <!-- 測驗說明卡片 -->
     <div class="exam-info-card">
       <h2>應考人測驗說明</h2>
-      <p>本測驗採開放式作答，無時間限制。系統將自題庫隨機抽取 20 題，請詳閱各題意後進行勾選或填答，確認全部作答完畢後再點擊最下方之「交卷」按鈕。</p>
+      <p>本測驗採開放式作答，無時間限制。請詳閱各題意後進行勾選或填答，確認全部作答完畢後再點擊最下方之「交卷」按鈕。</p>
       <div class="exam-rules">
         <span class="rule-pill">滿分：100 分</span>
         <span class="rule-pill">及格門檻：80 分</span>
-        <span class="rule-pill">題數：共 20 題（自百大題庫隨機抽題）</span>
+        <span class="rule-pill">題數：共 20 題</span>
         <span class="rule-pill" style="background:#fef3c7; color:#92400e; border-color:#fde68a;">注意：交卷後即可查看分數與解析</span>
       </div>
     </div>
@@ -427,21 +427,21 @@
       <form id="quizForm" onsubmit="return false;">
         <!-- 第一部分：複選題 -->
         <div class="section-banner">
-          壹、複選題（第 1～10 題，每題 5 分，全對始給分）
+          壹、複選題（第 1～10 題，每題 5 分）
         </div>
         <div id="mcqContainer"></div>
 
         <!-- 第二部分：簡答題 -->
         <div class="section-banner">
-          貳、簡答題（第 11～20 題，每題 5 分，依核心關鍵字自動評分）
+          貳、簡答題（第 11～20 題，每題 5 分）
         </div>
         <div id="saContainer"></div>
 
         <!-- 交卷區 -->
         <div id="submitZone" class="submit-zone">
           <h3 style="color: var(--gov-navy); margin-bottom: 12px; font-size: 1.4rem;">測驗作答結束</h3>
-          <p style="color: var(--text-sub); margin-bottom: 24px; font-size: 1.05rem;">請確認所有題目皆已填答完畢。點擊下方按鈕後，系統將結算成績並顯示標準答案解析。</p>
-          <button type="button" class="btn-submit" onclick="confirmSubmit()">確認交卷並進行批改</button>
+          <p style="color: var(--text-sub); margin-bottom: 24px; font-size: 1.05rem;"></p>
+          <button type="button" class="btn-submit" onclick="confirmSubmit()">確認交卷</button>
         </div>
       </form>
     </div>
@@ -1285,7 +1285,7 @@ function renderQuiz() {
           <div class="q-score-tag" id="score-tag-${globalIdx}">配分：5 分</div>
         </div>
         <textarea id="sa-input-${sIdx}" placeholder="請於此處輸入您的答案..." oninput="updateDynamicProgress()"></textarea>
-        <div class="sa-hint">提示：直接寫出重點關鍵字或數據即可，系統將自動比對專有名詞及數值。</div>
+        <div class="sa-hint"></div>
         <div class="feedback-box" id="fb-${globalIdx}"></div>
       </div>
     `;
@@ -1335,11 +1335,11 @@ function confirmSubmit() {
   });
 
   if (answeredCount < totalQuestions) {
-    if (!confirm(`您目前只作答了 ${answeredCount} 題，還有 ${totalQuestions - answeredCount} 題未完成，確定要現在交卷嗎？`)) {
+    if (!confirm(`您目前只作答了 ${answeredCount} 題，還有 ${totalQuestions - answeredCount} 題未完成，請確認是否交卷`)) {
       return;
     }
   } else {
-    if (!confirm("確定要送出試卷並進行批改嗎？")) {
+    if (!confirm("確認送出試卷")) {
       return;
     }
   }
@@ -1440,7 +1440,7 @@ function submitQuiz() {
     }
 
     fb.innerHTML = `
-      <div><strong>系統關鍵字權重批改得分：${qScore} / 5 分</strong></div>
+      <div><strong>：${qScore} / 5 分</strong></div>
       <div class="keyword-list">${kwTagsHtml.join("")}</div>
       <div class="ref-box"><strong>官方標準解析：</strong><br>${item.ref}</div>
     `;
